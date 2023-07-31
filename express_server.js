@@ -33,11 +33,13 @@ const users = {
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
-    userID: "userRandomID"
+    userID: "userRandomID",
+    visits: 0
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "user2RandomID"
+    userID: "user2RandomID",
+    visits: 0
   }
 
 };
@@ -79,17 +81,27 @@ app.get("/login", (req, res) => {
 //SHORT URL
 app.get("/urls/:id", (req, res) => {
   const shortURL = req.params.id;
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[shortURL];
 
-  if(!req.session.user_id) {
-    res.status(401).send('You must be logged in to view this page');
+  // const visitCount = longURL ? longURL.visits : 0;
+
+  if (!req.session.user_id) {
+    res.status(401).send("You must be logged in to view this page");
   } else if (!longURL) {
-    res.status(404).send('Short URL does not exist');
+    res.status(404).send("Short URL does not exist");
   } else if (longURL && req.session.user_id === users[req.session.user_id].id) {
-  const templateVars = {shortURL: shortURL, username: users[req.session.user_id], longURL: urlDatabase[req.params.id]};
-  res.render("pages/urls_show", templateVars);
+    const visitCount = longURL.visits;
+
+    const templateVars = {
+      shortURL: shortURL,
+      username: users[req.session.user_id],
+      longURL: longURL,
+      visitCount: visitCount,
+    };
+
+    res.render("pages/urls_show", templateVars);
   } else {
-    res.status(403).send('You do not have permission to view this page');
+    res.status(403).send("You do not have permission to view this page");
   }
 });
 
@@ -108,11 +120,17 @@ app.get("/register", (req, res) => {
 
 //REDIRECT TO LONG URL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+
   if(!longURL) {
     res.status(404).send('Short URL does not exist');
+
   } else {
-    res.redirect(longURL);
+    urlDatabase[shortURL].visits = urlDatabase[shortURL].visits + 1;
+
+    // Redirect to the urls_show page with the updated visit count
+    res.redirect(longURL.longURL);
   }
 });
 
@@ -206,9 +224,10 @@ app.post("/urls/:id", (req, res) => {
   }
 });
 
+
 //LOGOUT POST REQUEST
 app.post("/logout", (req, res) => {
-  res.session = null;
+  req.session = null;
   res.redirect(`/urls`);
 });
 

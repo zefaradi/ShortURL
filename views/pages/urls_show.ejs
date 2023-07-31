@@ -16,12 +16,14 @@
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %>
+        <h5 class="card-title">TinyURL for: <%= longURL.longURL %>
         </h5>
         <p class="card-text">
-          Short URL ID: <a href="<%= longURL %>">
-            <%= shortURL %>
+          Short URL ID: <a href="/u/<%= shortURL %>" target="_blank" onclick="refreshPage()"><%= shortURL %></a>
           </a>
+        </p>
+        <p class="card-text">
+          Short URL visited: <%= visitCount %>
         </p>
       </div>
       <div class="card-footer text-muted">
@@ -33,6 +35,15 @@
         </form>
       </div>
     </div>
+
+    <!-- Add this script tag to the EJS template or include it in a separate JavaScript file -->
+    <script>
+      function refreshPage() {
+        setTimeout(function () {
+          location.reload();
+        }, 100); // Set the time (in milliseconds) you want to wait before refreshing the page (e.g., 1000ms = 1 second)
+      }
+    </script>
 
     <!-- Bootstrap JS -->
     <script
